@@ -13,6 +13,6 @@ class LinkedIn
         $this->term = $company;
         $finder = new GoogleFirstResultScraper();
         $url = $finder->returnResult($this->term);
-        echo $url;
+        return $url;
     }
 }

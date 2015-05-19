@@ -15,8 +15,8 @@
         "symfony/console": "~2.6",
         "monolog/monolog": "~1.13",
         "symfony/monolog-bundle": "~2.7",
-        "asimlqt/php-google-spreadsheet-client": "~2.3",
-        "google/apiclient": "~1.1"
+        "google/apiclient": "~1.1",
+        "wunderdata/google-spreadsheet-api": "0.1.*"
     },
 
     "require-dev": {
