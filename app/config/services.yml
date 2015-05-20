@@ -4,6 +4,6 @@ parameters:
 #    parameter_name: value
 
 services:
-#    service_name:
-#        class: AppBundle\Directory\ClassName
-#        arguments: ["@another_service_name", "plain_value", "%parameter_name%"]
+  node4.linkedinbundle.linkedin:
+    class: Node4\LinkedInBundle\LinkedInService
+    arguments: ['7821zeqhr374oh', 'doA15Wo6x999tkeV', 'r_basicprofile,r_emailaddress']

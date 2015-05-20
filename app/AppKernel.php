@@ -13,13 +13,16 @@ class AppKernel extends Kernel
             new Symfony\Bundle\TwigBundle\TwigBundle(),
             new Symfony\Bundle\MonologBundle\MonologBundle(),
             new AppBundle\AppBundle(),
-            new Node4\DataMiningBundle\Node4DataMiningBundle()
+            new Node4\DataMiningBundle\Node4DataMiningBundle(),
+            new Node4\LinkedInBundle\Node4LinkedInBundle()
         );
 
-        if (in_array($this->getEnvironment(), array('dev', 'test'))) {
+        if (in_array($this->getEnvironment(), array('dev', 'test')))
+        {
             $bundles[] = new Symfony\Bundle\DebugBundle\DebugBundle();
             $bundles[] = new Symfony\Bundle\WebProfilerBundle\WebProfilerBundle();
             $bundles[] = new Sensio\Bundle\GeneratorBundle\SensioGeneratorBundle();
+            $bundles[] = new Sensio\Bundle\DistributionBundle\SensioDistributionBundle();
         }
 
         return $bundles;

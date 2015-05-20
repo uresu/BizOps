@@ -4,17 +4,17 @@
 
 namespace AppBundle\Command;
 
-use Node4\DataMiningBundle\GoogleDrive;
+use Node4\LinkedInBundle;
+use Node4\DataMiningBundle\Google;
+
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Node4\DataMiningBundle\LinkedIn;
-use Buzz;
-use Symfony\Component\Validator\Constraints\False;
-use Wunderdata;
 
+use Google\Spreadsheet\DefaultServiceRequest;
+use Google\Spreadsheet\ServiceRequestFactory;
 
 class RunCommand extends ContainerAwareCommand
 {
@@ -25,55 +25,56 @@ class RunCommand extends ContainerAwareCommand
             ->setDescription('Run main program');
     }
 
+
     public function getLinkedInURLForCompany($company)
     {
         $linkedIn = new LinkedIn();
         return $linkedIn->getCompanyURI($company);
     }
 
-    public function execute(InputInterface $input, OutputInterface $output)
+
+    public function getOauth2Token()
     {
-        //
-        $results     = array();
-        $results[]   = $this->getLinkedInURLForCompany('Box UK');
-        //
-
-        //
-        $googleDrive = new GoogleDrive();
-        $token       = $googleDrive->getOauthToken();
-        //
-
-        //
-        $browser     = new Buzz\Browser();
-        $client      = new Wunderdata\Google\Client($token, $browser);
-
-        $allSpreadsheets = $client->loadSpreadsheets();
-        $worksheets = $client->loadWorksheets($allSpreadsheets[0]);
-        $cellFeed = $client->loadCellFeed($worksheets[0]);
-
-        $allCellsInWorksheet = $cellFeed->getCells();
-        $count = $cellFeed->countRows();
-
-        $readColumn = 'B';
-        $writeColumn = 'C';
-        $row  =  2;
-
-        for($i = $row; $i < $count; $i++)
-        {
-            $readAddress  = $readColumn.$i;
-            $writeAddress = $writeColumn.$i;
-
-            $cellToRead  = $cellFeed->findCell($readAddress);
-            $cellToWrite = new Wunderdata\Google\Cell();
-            $cellsToWrite = new Wunderdata\Google\CellFeed(array($cellToWrite));
-
-            $company = $cellToRead->getContent();
-            $cellToWrite->setContent($company);
-        }
-
-        $browser->getLastRequest();
-
+        $googleDrive = new Google();
+        $accessToken = $googleDrive->getOauthToken();
+        return $accessToken;
     }
 
 
+    public function getAllLinkedInURIs()
+    {
+        $accessToken = $this->getOauth2Token();
+
+        $serviceRequest = new DefaultServiceRequest($accessToken);
+        ServiceRequestFactory::setInstance($serviceRequest);
+
+        $spreadsheetService = new \Google\Spreadsheet\SpreadsheetService();
+        $spreadsheetFeed    = $spreadsheetService->getSpreadsheets();
+        $spreadsheet        = $spreadsheetFeed->getByTitle('Node4Clients');
+        $worksheetFeed      = $spreadsheet->getWorksheets();
+        $worksheet          = $worksheetFeed->getByTitle('Sheet1');
+        $listFeed           = $worksheet->getListFeed();
+
+        foreach ($listFeed->getEntries() as $entry)
+        {
+            $values = $entry->getValues();
+            $values['linkedin'] = $this->getLinkedInURLForCompany($values['accountname']);
+            $entry->update($values);
+        }
+    }
+
+
+
+    public function execute(InputInterface $input, OutputInterface $output)
+    {
+        //$this->getAllLinkedInURIs();
+        //$finder = new LinkedIn();
+        //$results = $finder->getCompanyIdFromName('Box UK Limited');
+
+        $linkedInAPIWorker = new LinkedInBundle\LinkedInService('7821zeqhr374oh', 'doA15Wo6x999tkeV', 'r_basicprofile,r_emailaddress');
+        $linkedInAPIWorker->getAccessToken();
+        $data = $linkedInAPIWorker->api('GET', 'https://api.linkedin.com/v1/companies/38538');
+        var_dump($data);
+
+    }
 }

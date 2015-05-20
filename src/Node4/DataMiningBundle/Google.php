@@ -3,10 +3,9 @@
 namespace Node4\DataMiningBundle;
 
 use Node4\DataMiningBundle;
-use Google;
-use Zend_Gdata;
+use Goutte\Client;
 
-class GoogleDrive
+class Google
 {
     private $clientId           = '707198933174-dgpbqeo1cj2552lvh6e32od5crjqudjt.apps.googleusercontent.com';
     private $clientAppName      = 'Node4DataMiner';
@@ -15,6 +14,7 @@ class GoogleDrive
     private $client;
     private $p12Key;
     private $keyFileLocation;
+    public  $term;
 
     public function __construct()
     {
@@ -72,6 +72,29 @@ class GoogleDrive
     public function getSheetKeyByTitle($title)
     {
 
+    }
+
+    public function returnFirstResult($term)
+    {
+        $this->term = $term;
+        $client = new Client();
+        $client->setHeader('User-Agent', "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36");
+        $crawler = $client->request('GET', 'https://www.google.co.uk');
+
+        $form = $crawler->selectButton('Google Search')->form();
+        $form['q'] = $this->term . 'linkedin ';
+
+        // submit that form
+        $crawler = $client->submit($form);
+
+        $url =
+            (
+                $crawler
+                ->filter('#rso > div.srg > li:nth-child(1) div > h3 > a')
+                ->extract('href')
+            );
+
+        return $url[0];
     }
 
 }
